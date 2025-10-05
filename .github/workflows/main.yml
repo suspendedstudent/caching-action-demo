@@ -1,0 +1,33 @@
+name: Caching Demo Workflow
+
+# Run on pushes to the main branch and also allow manual runs
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Cache dependencies
+      id: cache-step # Give the step an ID to reference its output
+      uses: actions/cache@v4
+      with:
+        path: ~/cached-dependencies
+        key: cache-4234748
+
+    - name: Create dummy dependency files (if cache missed)
+      if: steps.cache-step.outputs.cache-hit != 'true'
+      run: |
+        echo "Cache was not found. Creating new dependency files."
+        mkdir -p ~/cached-dependencies
+        echo "dependency-file-content" > ~/cached-dependencies/deps.txt
+
+    # This step meets the requirement of the prompt
+    - name: prime-cache-4234748
+      run: echo "The cache-hit status was ${{ steps.cache-step.outputs.cache-hit }}"
